@@ -2,11 +2,13 @@ import os
 import requests
 from dnsblock import const
 
-def get_source_path():
+def get_source_path() -> str:
     """Get the path to the source file containing blocklists to use.
 
     By default the path is ~/dnsblock/blocklists.txt.
     The default path can be changed using env variable DNSBLOCK_SOURCE_PATH.
+
+    :return: final_path - path to Blockist masterlist file
     """
     default_path = os.path.expanduser(const.DNSBLOCK_SOURCE_PATH)
     final_path = os.environ.get('DNSBLOCK_SOURCE_PATH', default_path)
@@ -47,4 +49,4 @@ def fetch_single_blocklist(url: str=None) -> list[str]:
                         blocklist_data.append(domain_name)
     else:
         return 'No url'
-    return  blocklist_data
+    return  blocklist_data   
