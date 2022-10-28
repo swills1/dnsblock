@@ -27,7 +27,7 @@ def fetch_blocklist_data(session: requests.Session, url: str, timeout: int) -> B
         return BlocklistResponse(url, False, '')
 
 
-def get_blocklist_data(timeout: int=10):
+def get_blocklist_data(timeout: int=10, custom_path: str=None, url: str=None):
     """Use threading to process the source list and pull in fetched url data.
 
     :param timeout: Request timeout in seconds
@@ -38,16 +38,20 @@ def get_blocklist_data(timeout: int=10):
     session = requests.Session()
     with concurrent.futures.ThreadPoolExecutor() as executor:
         futures = []
-        for url in utils.build_source_list():
-            if not url.startswith('#'):
-                futures.append(executor.submit(fetch_blocklist_data, session, url, timeout))
+        if custom_path is not None:
+            block_host = utils.build_source_list(custom_path)
+        elif url is not None:
+            block_host = url
+        else:
+            block_host = utils.build_source_list()
+        for blocklist in block_host:
+            if not blocklist.startswith('#'):
+                futures.append(executor.submit(fetch_blocklist_data, session, blocklist, timeout))
         results = [future.result() for future in concurrent.futures.as_completed(futures)]
-        bad_urls = [result.url for result in results if not result.success]
-        good_urls = [result.url for result in results if result.success]
+        bad_urls = [result.blocklist for result in results if not result.success]
+        good_urls = [result.blocklist for result in results if result.success]
     return results, bad_urls, good_urls
 
-#test = get_blocklist_data()
-#print(test[0])
 
 def unpack_blocklist_data() -> list[str]:
     """Turn get_blocklist_data results into list - includes IP if present
@@ -61,7 +65,6 @@ def unpack_blocklist_data() -> list[str]:
         result_all = r.splitlines()
     return result_all
 
-print(unpack_blocklist_data())
 
 def isolate_hostname() -> list[str]:
     """Isolate hostname when IP present and add just hostnames to list
@@ -71,11 +74,12 @@ def isolate_hostname() -> list[str]:
     blocklist_data = unpack_blocklist_data()
     hostnames = []
     for entry in blocklist_data:
-        if not entry.startswith('#'):
-            hostname = entry.split()[1]
-            hostnames.append(hostname)
+        if not entry.startswith('#') and entry.strip() != '':
+            hostname = entry.split()
+            hostnames.append(hostname[-1])
     return hostnames
 
+#print(isolate_hostname())
 
 def format_dnslist(prefix: str, suffix: str) -> list[str]:
     """Format DNS hostnames in preparation for zone conf file
@@ -87,7 +91,7 @@ def format_dnslist(prefix: str, suffix: str) -> list[str]:
     hostnames = isolate_hostname()
     zone_entry_list = []
     for hostname in hostnames:
-        zone_entry = prefix + hostname + suffix
+        zone_entry = hostname #prefix + hostname + suffix
         zone_entry_list.append(zone_entry)
     return zone_entry_list
 
@@ -111,3 +115,17 @@ def build_conf_file(path: str, prefix: str, suffix: str):
         for url in formatted_blocklist:
             block_url = url + '\n'
             filehandle.writelines(block_url)
+
+
+# placeholder - needs to be rewritten with threading
+# urls need to take data from fetch_blocklist_data()
+def count_blocklist_entries():
+    urls = ['https://v.firebog.net/hosts/Easylist.txt', 'https://v.firebog.net/hosts/Admiral.txt']
+    entry_dict = {}
+    for url in urls:
+        response = requests.get(url)
+        entry_count = len(response.text.splitlines())
+        entry_dict.update({url: entry_count})
+    entry_total = sum(entry_dict.values())
+    entry_dict.update({"Total": entry_total})
+    return entry_dict

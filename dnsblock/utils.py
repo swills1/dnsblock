@@ -1,5 +1,4 @@
 import os
-import requests
 from dnsblock import const
 
 def get_source_path() -> str:
@@ -29,24 +28,3 @@ def build_source_list(source_path: str=None) -> list[str]:
         source_path = f.read().splitlines()
     source_list = [u for u in source_path if not u.startswith('#')]
     return source_list
-
-
-def fetch_single_blocklist(url: str=None) -> list[str]:
-    """Get DNS entries from a single blocklist by specifying the url.
-    
-    :param url: Url of blocklist containing DNS entries
-    :return: List of strings - dns hostname entries
-    """
-    if url:
-        response = requests.get(url)
-        blocklist_data = []
-        if response.status_code == 200:
-            response_text_list = response.text.splitlines()
-            for line in response_text_list:
-                if line and not line.startswith('#'):
-                    domain_name = line.split(' ')[-1]
-                    if domain_name != 'localhost':
-                        blocklist_data.append(domain_name)
-    else:
-        return 'No url'
-    return  blocklist_data   
