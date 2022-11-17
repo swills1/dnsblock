@@ -1,5 +1,5 @@
 # -*- coding=utf-8 -*-
-from packages.dnsblock.dnsblock import ingest_old
+from dnsblock import data
 import click
 
 @click.group()
@@ -9,9 +9,10 @@ def dnsblock():
 @dnsblock.command()
 @click.option('--url', '-u', help='Select data from DB', required=False)
 def count(url=None):
+    ch = data.CountHosts()
     if url:
-        ingest_old.show_count(url)
-    else: ingest_old.show_count
+        ch.show_count(url)
+    else: ch.show_count()
     
 if __name__ == '__main__':
     dnsblock()
