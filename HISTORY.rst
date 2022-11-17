@@ -3,11 +3,14 @@ Release History
 
 Current Notes
 -------------
+
 0.3.0
 -----
-* Added toml config file (added use of tomlkit to library)
+* Implemented tomlkit and pathlib
+* Added toml config file functionality
 * Implemented building zone file from toml config file
 * Re-wrote util function for getting source path to be re-useable
+* Added ability for both user and relative paths in util source path function
 * Decided on future standards and set up library to accept them
 
 0.2.0
