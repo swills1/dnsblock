@@ -16,3 +16,9 @@ def count(url=None):
     
 if __name__ == '__main__':
     dnsblock()
+
+@dnsblock.command()
+@click.option('--prefix', '-p', help='Prefix', required=False)
+def build(prefix=None):
+    data.build_zone_file_toml()
+    

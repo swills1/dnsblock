@@ -16,7 +16,7 @@ class BlocklistResponse:
 
 
 class BuildConf:
-    def __init__(self, prefix, suffix, path, url=None, source_path=None):
+    def __init__(self, prefix, suffix, zone_path, url=None, source_zone_path=None):
         """Fetch all data from blocklist urls and trap specific errors.
 
         :param session: Requests session
@@ -26,7 +26,7 @@ class BuildConf:
         """
         self.prefix = prefix
         self.suffix = suffix
-        self.path = path
+        self.zone_path = zone_path
         self.url = url
 
     def fetch_blocklist_data(self, session: requests.Session, url: str, timeout: int) -> BlocklistResponse:
@@ -105,18 +105,11 @@ class BuildConf:
         return zone_entry_list
 
     def build_zone_file(self):
-        """
-        Generate Recursive DNS zone file.
-
-        :param path: path to save zone file
-        :param prefix: string before hostname for zone file formatting
-        :param suffix: string behind hostname for zone file formatting
-        :return: :list: zone_entry_list
-        """
+        """Generate Recursive DNS zone file."""
         formatted_blocklist = self.format_dnslist(self.prefix, self.suffix)
         dateandtime = datetime.now()
         #date_string = dateandtime.strftime(config.GENERATED_DATETIME_FORMAT)
-        with open(self.path, 'w') as filehandle:
+        with open(self.zone_path, 'w') as filehandle:
             generatedby_comment = dateandtime.strftime(const.GEN_COMMENT)
             filehandle.writelines(generatedby_comment)
             filehandle.writelines('server:\n')
