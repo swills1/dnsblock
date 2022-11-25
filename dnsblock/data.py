@@ -18,7 +18,6 @@ class BlocklistResponse:
 class BuildConf:
     def __init__(self, prefix, suffix, zone_path, url=None, source_zone_path=None):
         """Fetch all data from blocklist urls and trap specific errors.
-
         :param session: Requests session
         :param url: url of blocklist from source file
         :param timeout: number of seconds before Requests timeout
@@ -31,7 +30,6 @@ class BuildConf:
 
     def fetch_blocklist_data(self, session: requests.Session, url: str, timeout: int) -> BlocklistResponse:
         """Fetch all data from blocklist urls and trap specific errors.
-
         :param session: Requests session
         :param url: url of blocklist from source file
         :param timeout: number of seconds before Requests timeout
@@ -45,7 +43,6 @@ class BuildConf:
 
     def get_blocklist_data(self, timeout: int=10):
         """Use threading to process the source list and pull in fetched url data.
-
         :param timeout: Request timeout in seconds
         :return: results - all raw results returned from each blocklists
         :return: bad_urls - any url that does not have a 200 status code
@@ -123,12 +120,21 @@ class CountHosts:
         self.url = url
 
     def starts_with_hash(self, child: str) -> bool:
-        """Exclude blocklist lines starting with #."""
+        """Exclude blocklist lines starting with #.
+
+        :param child: UnicodeTranslateError
+        :return: Boolean
+        """
         if not child.startswith('#'):
             return True
 
     def fetch_blocklist_count(self, session: requests.Session, url: str, timeout: int) -> BlocklistResponse:
-        """Perform entry count on blocklists"""
+        """Perform entry count on blocklists
+        
+        :param session: requests.session
+        :param url: Single url to get data from
+        :param timeout: requests.session timeout in seconds
+        """
         try:
             with session.get(url, timeout=timeout) as response:
                 filterobj = filter(self.starts_with_hash, response.text.splitlines())
@@ -137,13 +143,17 @@ class CountHosts:
         except requests.exceptions.RequestException as e:
             return 'booger'
 
-    def get_count(self, url=None, timeout: int=10):
-        """Get blocklist data and count using threading."""
+    def get_count(self, url=None, timeout: int=10) -> requests.Response:
+        """Count total entries per blocklist using threading.
+        
+        :param url: Single url to get data from
+        :param timeout: requests.session timeout in seconds
+        """
         session = requests.Session()
         with concurrent.futures.ThreadPoolExecutor() as executor:
             futures = []
             if url:
-                block_host = [url]
+                block_host = [url][0].split(', ')
             else: block_host = utils.build_blocklist_list()
             for blocklist in block_host:
                 if not blocklist.startswith('#'):
@@ -152,16 +162,25 @@ class CountHosts:
             results.update({"Total": sum(results.values())})
         return results
 
-    def show_count(self, url=None):
-        """Show the count for every URL and perform a sum."""
+    def show_count(self, url=None) -> str:
+        """Show the count for every URL and perform a sum.
+        By default, counts blocklist.txt.
+        Takes url arg to count total entries for any given URL(s).
+        
+        :param url: (optional) List as string of urls to count.
+        """
         if url:
-            count_data = self.get_count(url)
+            count_data = self.get_count(url):
         else: count_data = self.get_count()
         for key, value in count_data.items():
             print(f'{key} {value}')
 
 
 def build_zone_file_toml():
+    """Builds a zone file from values set in config file.
+    Default config located at - ~/.config/dnsblock/config.toml
+    Config location can be changed by usin env variable - DNSBLOCK_BLOCKLIST_PATH
+    """
     toml_dict = tomlkit.loads(utils.get_source_path('DNSBLOCK_CONFIG_PATH', const.DNSBLOCK_CONFIG_PATH).read_text())
     if dd := toml_dict.get('default'):
         missing_keys = [key for key in ('zone_conf_path', 'prefix', 'suffix') if not dd.get(key)]
@@ -172,5 +191,3 @@ def build_zone_file_toml():
             t.build_zone_file()
     else:
         raise KeyError('Config file missing the table "default"')
-
-build_zone_file_toml()

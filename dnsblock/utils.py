@@ -5,6 +5,12 @@ from dnsblock import const
 
 
 def get_source_path(env_var: str, default_path: str) -> str:
+    """
+    
+    :param env_var: Environment variable to use if set.
+    param default_path: Default blocklist path ~/.config/dnsblock/blocklist.txt
+    :return: String - blocklist file path
+    """
     final_path = Path(os.getenv(env_var, default_path)).expanduser().resolve()
     if not final_path.is_file():
         raise FileNotFoundError(f'File {final_path} does not exist')
