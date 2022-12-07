@@ -6,7 +6,7 @@ Overview
 --------
 This is a Python library used to automatically generate zone files from maintained *Blocklists*.
 
-The overall intent is to be able to generate zone files tailored to different pieces of software.
+The overall intent is to have one library that can generate zone files tailored to different resolver software.
 
 It can generate zone files formatted to work with your specific recursive or stub resolver.
 
@@ -14,9 +14,11 @@ Examples would be Unbound or Dnsmaq.
 
 What's the point?
 -----------------
-Blocklists are maintained lists of hosts you may want to block on your network. These lists change.
+Blocklists are curated lists of hosts you may want to block on your local network.
 
-Dnsblock allows you to schedule pulling down blocklists, rebuilding your zone file, and restarting 
+Blocklists are maintained and updated regularly.
+
+Dnsblock allows you to schedule pulling down blocklists as they change, rebuilding your zone file, and restarting 
 your DNS software without you ever having to be involved.
 
 Dnsblock also allows you to ingest multiple blocklists at once.
