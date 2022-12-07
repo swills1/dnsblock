@@ -170,7 +170,7 @@ class CountHosts:
         :param url: (optional) List as string of urls to count.
         """
         if url:
-            count_data = self.get_count(url):
+            count_data = self.get_count(url)
         else: count_data = self.get_count()
         for key, value in count_data.items():
             print(f'{key} {value}')
