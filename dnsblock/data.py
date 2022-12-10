@@ -15,7 +15,7 @@ class BlocklistResponse:
     text: Optional[str] = None
 
 
-class BuildConf:
+class BuildZone:
     def __init__(self, prefix, suffix, zone_path, url=None, source_zone_path=None):
         """Fetch all data from blocklist urls and trap specific errors.
         :param session: Requests session
